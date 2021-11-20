@@ -1,0 +1,158 @@
+'''HousePart1and2Hays
+Author:Rushay Hays
+Major:Computer Science
+Class:CSC1200
+A program to generate a 'simple' treaure collecting game
+
+Additional note: I got the program to work, but it's a little bulky, I couldn't quite figure out how to code it the way you had outlined, but I followed the psuedo code as closely as I could while still getting it working and turned in on time. Please Enjoy!
+'''
+
+#Opens the file and generates a multidimensional list
+def build_house():
+  print("Please enter the house file: ")
+  house_file = input()
+  housefp = open(house_file, "r")
+  myhouse = [] 
+  line = housefp.readline()
+  while line:
+    myhouse.append(list(line))
+    line = housefp.readline()
+  return myhouse
+
+#Generates the map
+import copy
+def print_house(h,sr,sc):
+  th = copy.deepcopy(h)
+  th[sr][sc] = "@"
+  for i in th:
+    print(''.join(str(x) for x in i), end='')
+
+#Function for detecting treasure, replacing the t with a _, and updating the tcount
+def get_treasure(h,tr,tc,tcnt):
+  if h[tr][tc]=="t":
+    print("")
+    print("YOU FOUND A TREASURE")
+    h[tr].pop(tc)
+    h[tr].insert(tc,"_")
+    newt=tcnt+1
+  else:
+    newt=0
+    print("")
+  return newt
+
+#this section detects keys, replaces them with a _, and updates the keycount.
+def get_key(h,tr,tc,unlck):
+  if h[tr][tc]=="0":
+    print("")
+    print("YOU FOUND A KEY")
+    h[tr].pop(tc)
+    h[tr].insert(tc,"_")
+    unlck.pop(0)
+    unlck.insert(0, "UNLOCK")
+    kc=1
+    return kc
+  elif h[tr][tc]=="1":
+    print("")
+    print("YOU FOUND A KEY")
+    h[tr].pop(tc)
+    h[tr].insert(tc,"_")
+    unlck.pop(1)
+    unlck.insert(1, "UNLOCK")
+    kc=1
+    return kc
+  else:
+    print("")
+    kc=0
+    return kc
+
+#This function combines is_door and can_unlock
+def is_door(h,tr,tc,sr,sc,unlck):
+  if h[tr][tc]=="5":
+    if unlck[0]=="UNLOCK":
+      h[tr].pop(tc)
+      h[tr].insert(tc,"_")
+      print("You unlocked the door")
+      return tr,tc
+    else:
+      print("Sorry door is locked")
+      tr=sr
+      tc=sc
+      return tr,tc
+  elif h[tr][tc]=="6":
+    if unlck[1]=="UNLOCK":
+      h[tr].pop(tc)
+      h[tr].insert(tc,"_")
+      print("You unlocked the door")
+      return tr,tc
+    else:
+      print("Sorry door is locked")
+      tr=sr
+      tc=sc
+      return tr,tc
+  else:
+    print("")
+    return tr,tc
+
+
+def main():
+  house=build_house()
+  #Player's start location
+  startrow=1
+  startcol=8
+  numtreasures=2
+  #how many treasures found so far
+  tcount=0
+  keycount=0
+  #Couldn't get the list to work with True and False values, used the words LOCK and UNLOCK instead
+  unlocked=["LOCK","LOCK","LOCK","LOCK","LOCK"]
+  #main driver loop
+  while (tcount<numtreasures):
+    print("Treasure:"+str(tcount) +" "+"Keys:"+str(keycount))
+    print_house(house,startrow,startcol)
+    check_north=house[startrow-1][startcol]=="*"
+    check_east=house[startrow][startcol+1]=="*"
+    check_south=house[startrow+1][startcol]=="*"
+    check_west=house[startrow][startcol-1]=="*"
+    print("Available directions (Press'q' to quit)")
+    if check_north==False:
+      print("n")
+    if check_east==False:
+      print("e")
+    if check_south==False:
+      print("s")
+    if check_west==False:
+      print("w")
+    command=input("Choose a direction to go:")
+    trow=startrow
+    tcol=startcol
+    if command=="n" and check_north==False:
+      trow=startrow-1
+      tcol=startcol
+    elif command=="e" and check_east==False:
+      trow=startrow
+      tcol=startcol+1
+    elif command=="s" and check_south==False:
+      trow=startrow+1
+      tcol=startcol
+    elif command=="w" and check_west==False:
+      trow=startrow
+      tcol=startcol-1
+    elif command=="q":
+      break
+    else:
+      print("Not a valid command. Please enter a valid command")
+    gottakey=get_key(house,trow,tcol,unlocked)
+    lckrow,lckcol=is_door(house,trow,tcol,startrow,startcol,unlocked) 
+    newt=get_treasure(house,trow,tcol,tcount)
+    keycount+=gottakey
+    trow=lckrow
+    tcol=lckcol
+    startrow=trow
+    startcol=tcol
+    tcount+=newt
+  print("CONGRATULAIONS!!!! YOU FOUND ALL THE TREASURE!")
+  #showing the screen one more time feels more satisfying
+  print_house(house,startrow,startcol)
+
+
+main()
